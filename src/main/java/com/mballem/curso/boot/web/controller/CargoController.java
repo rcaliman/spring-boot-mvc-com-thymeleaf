@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,8 @@ import com.mballem.curso.boot.domain.Cargo;
 import com.mballem.curso.boot.domain.Departamento;
 import com.mballem.curso.boot.service.CargoService;
 import com.mballem.curso.boot.service.DepartamentoService;
+
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/cargos")
@@ -40,7 +43,12 @@ public class CargoController {
     }
 
     @PostMapping("/salvar")
-    public String salvar(Cargo cargo, RedirectAttributes attr) {
+    public String salvar(@Valid Cargo cargo, BindingResult result, RedirectAttributes attr) {
+
+        if (result.hasErrors()) {
+            return "/cargo/cadastro";
+        }
+
         cargoService.salvar(cargo);
         attr.addFlashAttribute("success", "Cargo inserido com sucesso");
         return "redirect:/cargos/cadastrar";
@@ -53,7 +61,12 @@ public class CargoController {
     }
 
     @PostMapping("/editar")
-    public String editar(Cargo cargo, RedirectAttributes attr) {
+    public String editar(@Valid Cargo cargo, BindingResult result, RedirectAttributes attr) {
+
+        if (result.hasErrors()) {
+            return "/cargo/cadastro";
+        }
+        
         cargoService.editar(cargo);
         attr.addFlashAttribute("success", "Registro atualizado com sucesso.");
         return "redirect:/cargos/cadastrar";
@@ -61,7 +74,7 @@ public class CargoController {
 
     @GetMapping("/excluir/{id}")
     public String excluir(@PathVariable Long id, RedirectAttributes attr) {
-        if(cargoService.cargoTemFuncionarios(id)) {
+        if (cargoService.cargoTemFuncionarios(id)) {
             attr.addFlashAttribute("fail", "Cargo não excluido. Tem funcionario(s) vinculado(s)");
         } else {
             cargoService.excluir(id);
